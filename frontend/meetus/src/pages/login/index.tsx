@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Label } from "@radix-ui/react-label"
+import {useAuth} from "../../hooks/useAuth";
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 const loginSchema = z.object({
   email: z
@@ -26,6 +28,11 @@ const loginSchema = z.object({
 })
 
 function Login() {
+  const {login, loginWithGoogle} = useAuth();
+  const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -34,10 +41,18 @@ function Login() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    const {email, password} = values;
+    try {
+      login(email, password);
+      navigate('/dashboard');
+    } catch (error: any) { 
+      console.log(error.message);
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    const user = await loginWithGoogle()
   }
 
 
@@ -89,12 +104,12 @@ function Login() {
                 </Button>
               </form>
             </Form>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
               Iniciar sesión con Google
             </Button>
             <div className="mt-4 text-center text-sm">
               ¿No tienes una cuenta?{" "}
-              <a href="/signup" className="underline">
+              <a href="/register" className="underline">
                 Regístrate
               </a>
             </div>

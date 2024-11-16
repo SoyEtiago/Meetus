@@ -12,6 +12,10 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import {useAuth} from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const signupSchema = z
   .object({
@@ -34,6 +38,8 @@ const signupSchema = z
   });
 
 function Signup() {
+  const {signup} = useAuth();
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -44,9 +50,45 @@ function Signup() {
     },
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const extractPasswordRequirements = (message: string): string => {
+    const match = message.match(/\[(.*?)\]/);
+    if (match && match[1]) {
+      return match[1]
+        .split(",")
+        .map((req) => req.trim())
+        .join(", ");
+    }
+    return message;
+  };
+
   const onSubmit = (values: z.infer<typeof signupSchema>) => {
     console.log(values);
-    // Handle form submission logic here (e.g., API call)
+    const {email, password} = values;
+    try {
+      signup(email, password);
+      navigate('/dashboard');
+    } catch (error: any) {
+      if (error.code == "auth/password-does-not-meet-requirements") {
+        const requirements = extractPasswordRequirements(error.message);
+        form.setError("password", {
+          type: "custom",
+          message: `La contraseña no cumple con los requisitos: ${requirements}`,
+        });
+      } else if (error.code == "auth/email-already-in-use") {
+        form.setError("email", {
+          type: "custom",
+          message: "Correo electrónico en uso",
+        });
+      } else {
+        console.error(error.message);
+        form.setError("password", {
+          type: "custom",
+          message: "Hubo un error inesperado. Por favor, inténtelo de nuevo.",
+        });
+      }
+    }
   };
 
   return (
@@ -85,7 +127,7 @@ function Signup() {
                         <FormControl>
                           <Input type="email" placeholder="Ingrese su correo electrónico" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -98,9 +140,23 @@ function Signup() {
                       <FormItem>
                         <FormLabel>Contraseña</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Ingrese su contraseña" {...field} />
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Ingrese su contraseña"
+                            {...field}
+                          />
+                          <Button
+                            variant="ghost" size="icon"
+                            type="button"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            className="absolute right-0 top-2/4 -translate-y-2/4"
+                          >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </Button>
+                        </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -113,11 +169,13 @@ function Signup() {
                       <FormItem>
                         <FormLabel>Confirmar contraseña</FormLabel>
                         <FormControl>
+                        <div className="relative">
                           <Input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Vuelva a introducir su contraseña"
                             {...field}
                           />
+                        </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
