@@ -7,6 +7,7 @@ import Protected from './routes/Protected.jsx'
 import Dashboard from './pages/dashboard/index.tsx'
 import { EventPage } from './pages/events/index.jsx'
 import { NewEventPage } from './pages/events/new/index.jsx'
+import {ChatViewWithSidebar} from './pages/chat/'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path='/dashboard' element={<Dashboard/>}>
               <Route path='/dashboard/events' element={<EventPage/>}/>
               <Route path='/dashboard/events/new' element={<NewEventPage/>}/>
+              <Route path='/dashboard/chat' element={<ChatViewWithSidebar/>}/>
             </Route>
           </Route>
         </Routes>

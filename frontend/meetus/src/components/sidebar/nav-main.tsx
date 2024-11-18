@@ -42,7 +42,7 @@ export function NavMain({
             asChild
             defaultOpen={item.isActive}
             className="group/collapsible"
-            onClick={()=> {navigate('/dashboard/events')}}
+            onClick={()=> {navigate(item.url)}}
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
