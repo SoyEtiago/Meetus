@@ -15,6 +15,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { useNavigate } from "react-router-dom"
 
 export function NavMain({
   items,
@@ -30,6 +31,7 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const navigate = useNavigate()
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -40,6 +42,7 @@ export function NavMain({
             asChild
             defaultOpen={item.isActive}
             className="group/collapsible"
+            onClick={()=> {navigate('/dashboard/events')}}
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
@@ -53,10 +56,8 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
+                      <SidebarMenuSubButton href={subItem.url}>
                           <span>{subItem.title}</span>
-                        </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

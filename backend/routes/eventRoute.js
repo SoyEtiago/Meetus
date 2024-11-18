@@ -1,24 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const eventoController = require('../controllers/eventoController');
-const {authMiddleware} = require('../middlewares/authMiddleware');
+const express = require('express')
+
+const eventoController = require('../controllers/eventController')
+
+const router = express.Router()
 
 
-// Crear un evento (requiere autenticación)
-router.post('/', eventoController.crearEvento);
+router.get('/events/all', (req, res) => {
+  res.send('LISTARÁ TODOS LOS EVENTOS');
+})
 
-// Obtener todos los eventos
-router.get('/', eventoController.obtenerEventos);
+router.post('/events/new', eventoController.crearEvento)
 
-// // Obtener un evento por ID
-// router.get('/:id', eventoController.obtenerEventoPorId);
 
-// // Actualizar un evento (requiere autenticación)
-// router.put('/:id', eventoController.actualizarEvento);
-
-// // Eliminar un evento (requiere autenticación)
-// router.delete('/:id', eventoController.eliminarEvento);
-
-router.post('/:eventoId-:participanteId', eventoController.registrarParticipante);
-
-module.exports = router;
+module.exports = router

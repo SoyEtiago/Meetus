@@ -1,15 +1,9 @@
-// models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   nombre: {
     type: String,
     required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
   },
   email: {
     type: String,
@@ -19,11 +13,6 @@ const userSchema = new mongoose.Schema({
   hashedPassword: {
     type: String,
     required: true,
-  },
-  rol: {
-    type: String,
-    enum: ['Organizador', 'Participante'],
-    default: 'Participante',
   },
   eventosRegistrados: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +31,6 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-const Usuario = mongoose.model('usuarios', userSchema);
+const Usuario = mongoose.model('Usuario', userSchema);
 
 module.exports = Usuario;

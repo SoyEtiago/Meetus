@@ -51,21 +51,12 @@ const data = {
   navMain: [
     {
       title: "Eventos",
-      url: "#",
+      url: "/dashboard/events",
       icon: Calendar1,
-      isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Nuevo evento",
+          url: "/dashboard/events/new",
         },
       ],
     },
@@ -145,7 +136,7 @@ export function AppSidebar({ user }: { user: User }, { ...props }: React.Compone
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
