@@ -28,7 +28,6 @@ export const ChatViewWithSidebar = () => {
 
 
   useEffect(()=> {
-    console.log(user.uid)
     const unsub = onSnapshot(doc(firestore, "userchats", user.uid), async(res) => {
       const items = res.data().chats;
       const promises = items.map(async(item) => {
@@ -127,8 +126,8 @@ export const ChatViewWithSidebar = () => {
     setActiveChat(chat);
   }
 
-  console.log(chat, "CHAT MESSAGE VIEWED")
-  console.log(activeChat, "ACTIVE VIEWED")
+  // console.log(chat, "CHAT MESSAGE VIEWED")
+  // console.log(activeChat, "ACTIVE VIEWED")
 
   const handleSendMessage = async () => {
     if(newMessage == "") return;
@@ -216,12 +215,12 @@ export const ChatViewWithSidebar = () => {
               onClick={() => handleSelect(chat)}
             >
               <Avatar>
-                <AvatarImage src={chat.user.photoURL} alt={chat.user.nombre} />
-                <AvatarFallback>{chat.user.nombre[0]}</AvatarFallback>
+                <AvatarImage src={chat?.user?.photoURL}/>
+                <AvatarFallback>{chat?.user?.nombre[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">
-                <h3 className="font-semibold truncate">{chat.user.nombre}</h3>
-                <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
+                <h3 className="font-semibold truncate">{chat?.user.nombre}</h3>
+                <p className="text-sm text-muted-foreground truncate">{chat?.lastMessage}</p>
               </div>
             </div>
           ))}

@@ -97,7 +97,7 @@ export function EventPage() {
       <div className="w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {events.map((event, key) => {
-            console.log(event._id," : ",key)
+            // console.log(event._id," : ",key)
             return (
             <Card key={event._id} className="w-full">
               <CardContent className="p-4">

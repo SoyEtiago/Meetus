@@ -62,7 +62,6 @@ export function AuthProvider({children}) {
     const googleProvider = new GoogleAuthProvider()
     const userData = await signInWithPopup(auth, googleProvider)
 
-    console.log(userData)
     const firebaseId = userData.user.uid;
     const email = userData.user.email;
     const nombre = userData.user.displayName;
