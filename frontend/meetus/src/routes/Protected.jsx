@@ -6,8 +6,6 @@ const Protected = () => {
   const {user, loading} = useAuth()
 
   if(loading) return (<LoaderSpinner size={60}/>);
-
-  console.log(user);
   return (
     user ? <Outlet /> : <Navigate to="/login" />
   )

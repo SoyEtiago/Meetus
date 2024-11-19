@@ -67,23 +67,30 @@ export function AuthProvider({children}) {
     const email = userData.user.email;
     const nombre = userData.user.displayName;
 
-    await setDoc(doc(firestore, "users", userData.user.uid), {
-      nombre,
-      email,
-      id: userData.user.uid
-    })
+    const userDocRef = doc(firestore, "users", userData.user.uid);
+    const userChatsDocRef = doc(firestore, "userchats", userData.user.uid);
 
-    await setDoc(doc(firestore, "userchats", userData.user.uid), {
-      chats: []
-    })
-    
-      const response = await axiosInstance.post('/users/new', {
-        nombre,
-        email,
-        firebaseId
-      });
-
-      console.log(response)
+    try {
+      const userDocSnap = await getDoc(userDocRef);
+  
+      if (!userDocSnap.exists()) {
+        await setDoc(userDocRef, {
+          nombre,
+          email,
+          id: userData.user.uid,
+        });
+  
+        await setDoc(userChatsDocRef, {
+          chats: [],
+        });
+  
+        console.log("Documentos creados correctamente.");
+      } else {
+        console.log("El documento ya existe. No se realizaron cambios.");
+      }
+    } catch (error) {
+      console.error("Error al verificar o crear documentos:", error);
+    }
     
   }
 

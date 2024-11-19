@@ -42,12 +42,6 @@ const data = {
       title: "Eventos",
       url: "/dashboard/events",
       icon: Calendar1,
-      items: [
-        {
-          title: "Nuevo evento",
-          url: "/dashboard/events/new",
-        },
-      ],
     },
     {
       title: "Chat",

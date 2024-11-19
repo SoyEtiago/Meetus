@@ -64,7 +64,7 @@ function Signup() {
   };
 
   const onSubmit = (values: z.infer<typeof signupSchema>) => {
-    console.log(values);
+
     const {email, password, name} = values;
     try {
       signup(email, password, name);

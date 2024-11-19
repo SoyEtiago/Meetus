@@ -12,31 +12,31 @@ import {ChatViewWithSidebar} from './pages/chat/index.jsx'
 function App() {
   return (
     <AuthProvider>
-      <div className="App w-screen">
-        <Routes>
-          <Route element={<Anonymous/>}>
-            <Route
-              path='/*'
-              element={<Login/>}
-            />
-            <Route
-              path='/login'
-              element={<Login/>}
-            />
-            <Route
-              path='/register'
-              element={<Signup/>}
-            />
-          </Route>
-          <Route element={<Protected/>}>
-            <Route path='/dashboard' element={<Dashboard/>}>
-              <Route path='/dashboard/events' element={<EventPage/>}/>
-              <Route path='/dashboard/events/new' element={<NewEventPage/>}/>
-              <Route path='/dashboard/chat' element={<ChatViewWithSidebar/>}/>
+        <div className="App w-screen">
+          <Routes>
+            <Route element={<Anonymous/>}>
+              <Route
+                path='/*'
+                element={<Login/>}
+              />
+              <Route
+                path='/login'
+                element={<Login/>}
+              />
+              <Route
+                path='/register'
+                element={<Signup/>}
+              />
             </Route>
-          </Route>
-        </Routes>
-      </div>
+            <Route element={<Protected/>}>
+              <Route path='/dashboard' element={<Dashboard/>}>
+                <Route path='/dashboard/events' element={<EventPage/>}/>
+                <Route path='/dashboard/events/new' element={<NewEventPage/>}/>
+                <Route path='/dashboard/chat' element={<ChatViewWithSidebar/>}/>
+              </Route>
+            </Route>
+          </Routes>
+        </div>
     </AuthProvider>
   )
 }

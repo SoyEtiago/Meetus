@@ -1,147 +1,292 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Paperclip, Send, Smile, Search, MoreVertical } from 'lucide-react';
+import {onSnapshot, doc, getDoc, collection, query, where, getDocs, setDoc, serverTimestamp, updateDoc, arrayUnion} from "firebase/firestore"
+import {firestore} from "../../config/firebase/firebaseConfig"
+import {useAuth} from "../../hooks/useAuth"
 
 export const ChatViewWithSidebar = () => {
-  const [chats, setChats] = useState([
-    { id: 1, name: "John Doe", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "Hey, how are you?", timestamp: "10:00 AM", unread: 2 },
-    { id: 2, name: "Jane Smith", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "Can we meet tomorrow?", timestamp: "Yesterday", unread: 0 },
-    { id: 3, name: "Team Project", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "The deadline is next week", timestamp: "2 days ago", unread: 5 },
-  ]);
-  const [activeChat, setActiveChat] = useState(chats[0]);
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'John', content: 'Hey, how are you?', timestamp: '10:00 AM' },
-    { id: 2, sender: 'You', content: 'I\'m doing great, thanks! How about you?', timestamp: '10:02 AM' },
-    { id: 3, sender: 'John', content: 'Pretty good! Did you finish the project?', timestamp: '10:03 AM' },
-    { id: 4, sender: 'You', content: 'Yes, I just submitted it. How about yours?', timestamp: '10:05 AM' },
-  ]);
-  const [newMessage, setNewMessage] = useState('');
+  
+  const [chat, setChat] = useState();
+  const [activeChat, setActiveChat] = useState(null);
+  const {user} = useAuth()
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== '') {
-      const newMsg = {
-        id: messages.length + 1,
-        sender: 'You',
-        content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages([...messages, newMsg]);
-      setNewMessage('');
+  const messagesEndRef = useRef(null);
+
+  const [findUsers, setFindUsers] = useState(null)
+  const [chats, setChats] = useState([]);
+  const [newMessage, setNewMessage] = useState('')
+
+
+  useEffect(()=> {
+    console.log(user.uid)
+    const unsub = onSnapshot(doc(firestore, "userchats", user.uid), async(res) => {
+      const items = res.data().chats;
+      const promises = items.map(async(item) => {
+        const userDocRef = doc(firestore, "users", item.receiverId)
+        const userDocSnap = await getDoc(userDocRef)
+
+        const user = userDocSnap.data()
+
+        return {...item, user}
+      })
+
+      const chatData = await Promise.all(promises)
+
+      setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt))
+    })
+    return ()=> {
+      unsub()
     }
-  };
+  }, [])
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chat?.messages]);
+
+  const handleSearch = async(e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    const email = formData.get("email")
+
+    try {
+      const userRef = collection(firestore, "users")
+
+      const q = query(userRef, where("email", "==", email))
+
+      const querySnapshot = await getDocs(q)
+
+      if(!querySnapshot.empty) {
+        setFindUsers(querySnapshot.docs[0].data())
+      }
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
+  const handleAdd = async() => {
+
+    const chatRef = collection(firestore, "chats")
+    const userChatsRef = collection(firestore, "userchats")
+
+    try {
+      const newChatRef = doc(chatRef)
+
+      await setDoc(newChatRef, {
+        createdAt: serverTimestamp(),
+        messages: [],
+      })
+
+      await updateDoc(doc(userChatsRef, findUsers.id), {
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage: "",
+          receiverId: user.uid,
+          updatedAt:Date.now()
+        })
+      })
+
+      await updateDoc(doc(userChatsRef, user.uid), {
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage: "",
+          receiverId: findUsers.id,
+          updatedAt:Date.now()
+        })
+      })
+
+    }catch(e) {
+      console.log(e)
+    }
+  }
+
+  useEffect(() => {
+    if (!activeChat) return;
+  
+    const unSub = onSnapshot(doc(firestore, "chats", activeChat.chatId), (res) => {
+      setChat(res.data());
+    });
+  
+    return () => {
+      unSub();
+    };
+  }, [activeChat]);
+
+  const handleSelect = async (chat) => {
+    setActiveChat(chat);
+  }
+
+  console.log(chat, "CHAT MESSAGE VIEWED")
+  console.log(activeChat, "ACTIVE VIEWED")
+
+  const handleSendMessage = async () => {
+    if(newMessage == "") return;
+    
+    try {
+      await updateDoc(doc(firestore, "chats", activeChat.chatId), {
+        messages: arrayUnion({
+          senderId: user.uid,
+          text: newMessage,
+          createdAt: new Date()
+        })
+      })
+
+      const userIDs = [user.uid, activeChat.receiverId]
+
+      userIDs.forEach(async(id) => {
+
+        const userChatsRef = doc(firestore, "userchats", id)
+        const userChatsSnapshot = await getDoc(userChatsRef)
+  
+        if(userChatsSnapshot.exists()) {
+          const userChatsData = userChatsSnapshot.data();
+  
+          const chatIndex = userChatsData.chats.findIndex(c => c.chatId === activeChat.chatId)
+  
+          userChatsData.chats[chatIndex].lastMessage = newMessage
+          userChatsData.chats[chatIndex].isSeen = id === user.uid ? true : false;
+          userChatsData.chats[chatIndex].updatedAt = Date.now()
+  
+  
+          await updateDoc(userChatsRef, {
+            chats: userChatsData.chats
+          })
+
+        }
+      })
+
+    } catch(e){
+      console.log(e)
+    }
+  }
 
   return (
-    <div className="flex h-full mx-auto border rounded-lg overflow-hidden w-full">
+    <div className="flex h-full mx-auto border rounded-lg w-full">
       {/* Sidebar */}
       <div className="w-1/3 border-r bg-background">
         <div className="p-4 border-b">
-          <Input
-            placeholder="Search chats..."
-            className="w-full"
-          />
+        <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                <Search className="mr-2 h-4 w-4" />
+                Buscar chats...
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0">
+              <form onSubmit={handleSearch} className="p-4">
+                <div className="flex space-x-2">
+                  <Input
+                    type="text"
+                    placeholder="Correo electrónico"
+                    name="email"
+                    className="flex-grow"
+                  />
+                  <Button type="submit">Buscar</Button>
+                </div>
+              </form>
+              {findUsers && (
+                <div className="p-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{findUsers.email}</span>
+                    <Button variant="secondary" size="sm" onClick={handleAdd}>Agregar</Button>
+                  </div>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
-        <ScrollArea className="h-[calc(600px-65px)]">
+        <ScrollArea className="h-[calc(600px-65px)] rounded-md border">
           {chats.map((chat) => (
             <div
-              key={chat.id}
-              className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-muted ${
-                activeChat.id === chat.id ? 'bg-muted' : ''
+              key={chat.chatId}
+              className={`flex items-center gap-3 p-4 cursor-pointer hover:bg-muted transition-colors ${
+                activeChat?.chatId === chat.chatId ? 'bg-muted' : ''
               }`}
-              onClick={() => setActiveChat(chat)}
+              onClick={() => handleSelect(chat)}
             >
               <Avatar>
-                <AvatarImage src={chat.avatar} alt={chat.name} />
-                <AvatarFallback>{chat.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarImage src={chat.user.photoURL} alt={chat.user.nombre} />
+                <AvatarFallback>{chat.user.nombre[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">
-                <div className="flex justify-between items-baseline">
-                  <h3 className="font-semibold truncate">{chat.name}</h3>
-                  <span className="text-xs text-muted-foreground">{chat.timestamp}</span>
-                </div>
+                <h3 className="font-semibold truncate">{chat.user.nombre}</h3>
                 <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
               </div>
-              {chat.unread > 0 && (
-                <span className="bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {chat.unread}
-                </span>
-              )}
             </div>
           ))}
         </ScrollArea>
       </div>
 
-      {/* Chat Area */}
-      <Card className="flex-1 flex flex-col">
-        <CardHeader className="flex flex-row items-center gap-3 p-4">
-          <Avatar>
-            <AvatarImage src={activeChat.avatar} alt={activeChat.name} />
-            <AvatarFallback>{activeChat.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold">{activeChat.name}</h2>
-            <p className="text-sm text-muted-foreground">Online</p>
-          </div>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="h-5 w-5" />
-            <span className="sr-only">More options</span>
-          </Button>
-        </CardHeader>
-        <CardContent className="flex-grow overflow-hidden p-4">
-          <ScrollArea className="h-full pr-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex mb-4 ${message.sender === 'You' ? 'justify-end' : 'justify-start'}`}
-              >
+      {(activeChat ? (
+        <Card className="flex-1 flex flex-col">
+          <CardHeader className="flex flex-row items-center gap-3 p-4">
+            <div>
+              <h2 className="text-lg font-semibold">{activeChat.user.nombre}</h2>
+              <p className="text-sm text-muted-foreground">{activeChat.user.email}</p>
+            </div>
+          </CardHeader>
+          <CardContent className="p-1 max-h-[725px] h-[725px] flex justify-center">
+            <ScrollArea className="m-h-[98%] w-[98%] p-8">
+              {chat?.messages.map((message, key) => (
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
-                    message.sender === 'You'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
+                  key={key}
+                  className={`flex mb-4 ${message.senderId === user.uid ? 'justify-end' : 'justify-start'}`}
                 >
-                  <p>{message.content}</p>
-                  <span className="text-xs opacity-50 mt-1 block">
-                    {message.timestamp}
-                  </span>
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      message.senderId === user.uid
+                        ? 'bg-slate-200 text-primary-foreground'
+                        : 'bg-slate-500'
+                    }`}
+                  >
+                    <p>{message.text || ""}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </ScrollArea>
-        </CardContent>
-        <CardFooter className="p-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex w-full items-center gap-2"
-          >
-            <Button type="button" size="icon" variant="ghost">
-              <Paperclip className="h-5 w-5" />
-              <span className="sr-only">Attach file</span>
-            </Button>
-            <Input
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-grow"
-            />
-            <Button type="button" size="icon" variant="ghost">
-              <Smile className="h-5 w-5" />
-              <span className="sr-only">Insert emoji</span>
-            </Button>
-            <Button type="submit" size="icon">
-              <Send className="h-5 w-5" />
-              <span className="sr-only">Send message</span>
-            </Button>
-          </form>
-        </CardFooter>
-      </Card>
+              ))}
+              {/* Elemento invisible para el autoscroll */}
+              <div ref={messagesEndRef} />
+            </ScrollArea>
+          </CardContent>
+          <CardFooter className="p-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+                setNewMessage("")
+              }}
+              className="flex w-full items-center gap-2"
+            >
+              <Input
+                placeholder="Escribe tu mensaje..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                className="flex-grow"
+              />
+              <Button type="button" size="icon" variant="ghost">
+                <Smile className="h-5 w-5" />
+              </Button>
+              <Button type="submit" size="icon">
+                <Send className="h-5 w-5" />
+              </Button>
+            </form>
+          </CardFooter>
+        </Card>
+      ): (
+        <div className="flex-1 flex items-center justify-center bg-muted">
+          <p className="text-muted-foreground">Selecciona un chat para comenzar</p>
+        </div>
+      ))}
     </div>
   );
 };

@@ -28,7 +28,6 @@ export function EventPage() {
     const fetchEvents = async () => {
       try {
         const response = await axiosInstance.get('/events/all'); 
-        console.log(response.data.events)
         setEvents(response.data.events);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -104,9 +103,9 @@ export function EventPage() {
                   <Separator/>
                   <p>{event.descripcion}</p>
                   <div className="flex gap-2 flex-wrap">
-                    <Button className="w-full" variant="outline">
+                    {/* <Button className="w-full" variant="outline">
                       Hablar con organizador
-                    </Button>
+                    </Button> */}
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <div className="w-full flex justify-end">
                         <DialogTrigger asChild>
