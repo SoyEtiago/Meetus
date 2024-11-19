@@ -8,9 +8,8 @@ import {createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {axiosInstance} from "../config/axios/axiosIntance.js"
 
-import {app, auth} from "../config/firebase/firebaseConfig.js"
-import { setDoc } from "firebase/firestore";
-import {firestore} from "../../../config/firebase/firebaseConfig"
+import {app, auth, firestore} from "../config/firebase/firebaseConfig.js"
+import { doc, setDoc } from "firebase/firestore";
 
 export const authContext = createContext()
 
@@ -83,6 +82,8 @@ export function AuthProvider({children}) {
         email,
         firebaseId
       });
+
+      console.log(response)
     
   }
 

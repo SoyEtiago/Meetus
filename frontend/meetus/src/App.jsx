@@ -7,7 +7,7 @@ import Protected from './routes/Protected.jsx'
 import Dashboard from './pages/dashboard/index.tsx'
 import { EventPage } from './pages/events/index.jsx'
 import { NewEventPage } from './pages/events/new/index.jsx'
-import {ChatViewWithSidebar} from './pages/chat/'
+import {ChatViewWithSidebar} from './pages/chat/index.jsx'
 
 function App() {
   return (

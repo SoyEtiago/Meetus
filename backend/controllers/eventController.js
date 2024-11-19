@@ -40,6 +40,45 @@ const crearEvento = async (req, res) => {
 };
 
 
+const registrarAsistente = async (req, res) => {
+  const { eventoId, usuarioId } = req.body;
+
+  console.log(eventoId, usuarioId)
+
+  try {
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+
+    if (evento.asistentes.includes(usuarioId)) {
+      return res.status(400).json({ message: "El usuario ya está registrado como asistente" });
+    }
+
+    evento.asistentes.push(usuarioId);
+    console.log(evento)
+    await evento.save();
+
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    usuario.eventosRegistrados.push(eventoId);
+    await usuario.save();
+
+    return res.status(200).json({
+      message: "Asistente registrado exitosamente",
+      evento,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al registrar al asistente",
+      error: error.message,
+    });
+  }
+};
+
 const listarEventos = async (req, res) => {
   try {
     // Obtener todos los eventos de la base de datos
@@ -66,4 +105,4 @@ const listarEventos = async (req, res) => {
 };
 
 
-module.exports = {crearEvento, listarEventos}
+module.exports = {crearEvento, listarEventos, registrarAsistente}

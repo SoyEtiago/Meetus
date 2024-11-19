@@ -16,14 +16,19 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "../../hooks/useAuth"
+import { toast } from 'react-toastify';
 
 export function EventPage() {
+  const {user} = useAuth()
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const navigate = useNavigate()
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await axiosInstance.get('/events/all'); 
+        console.log(response.data.events)
         setEvents(response.data.events);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -32,8 +37,38 @@ export function EventPage() {
     fetchEvents();
   }, []);
 
-  const handleRegistration = () => {
-    
+  const handleRegistration = async (eventoId) => {
+    try {
+      const response = await axiosInstance.get(`/users/${user.uid}`)
+      const userData = response.data
+      const usuarioId = userData.usuario._id
+      await axiosInstance.post('/events/register-attendee', {
+        eventoId,
+        usuarioId
+      })
+      setIsDialogOpen(false);
+      toast.success("¡Te has registrado exitosamente!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (e) {
+      toast.error("Ocurrió un error al registrarte. Intenta nuevamente.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
   }
 
   return (
@@ -72,7 +107,7 @@ export function EventPage() {
                     <Button className="w-full" variant="outline">
                       Hablar con organizador
                     </Button>
-                    <Dialog>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <div className="w-full flex justify-end">
                         <DialogTrigger asChild>
                           <Button>
@@ -88,7 +123,9 @@ export function EventPage() {
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button type="submit" onClick={handleRegistration}>Registrarse</Button>
+                          <form onSubmit={(e)=>{e.preventDefault();handleRegistration(event._id)}}>
+                            <Button type="submit" >Registrarse</Button>
+                          </form>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>

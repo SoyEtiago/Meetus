@@ -29,18 +29,8 @@ const EventSchema = new Schema(
       required: true
     },
     asistentes: [
-      {
-        usuario_id: {
-          type: String,
-          required: true,
-          ref: "usuarios",
-        },
-        nombre: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
+    ]
   },
   { timestamps: true}
 );

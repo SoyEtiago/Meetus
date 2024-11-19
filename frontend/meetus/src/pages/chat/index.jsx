@@ -1,54 +1,38 @@
-import { useState } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Paperclip, Send, Smile, Search, MoreVertical } from 'lucide-react'
+import React, { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Paperclip, Send, Smile, Search, MoreVertical } from 'lucide-react';
 
-type Message = {
-  id: number;
-  sender: string;
-  content: string;
-  timestamp: string;
-}
-
-type Chat = {
-  id: number;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-}
-
-export  function ChatViewWithSidebar() {
-  const [chats, setChats] = useState<Chat[]>([
+export const ChatViewWithSidebar = () => {
+  const [chats, setChats] = useState([
     { id: 1, name: "John Doe", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "Hey, how are you?", timestamp: "10:00 AM", unread: 2 },
     { id: 2, name: "Jane Smith", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "Can we meet tomorrow?", timestamp: "Yesterday", unread: 0 },
     { id: 3, name: "Team Project", avatar: "/placeholder.svg?height=40&width=40", lastMessage: "The deadline is next week", timestamp: "2 days ago", unread: 5 },
-  ])
-  const [activeChat, setActiveChat] = useState(chats[0])
-  const [messages, setMessages] = useState<Message[]>([
+  ]);
+  const [activeChat, setActiveChat] = useState(chats[0]);
+  const [messages, setMessages] = useState([
     { id: 1, sender: 'John', content: 'Hey, how are you?', timestamp: '10:00 AM' },
     { id: 2, sender: 'You', content: 'I\'m doing great, thanks! How about you?', timestamp: '10:02 AM' },
     { id: 3, sender: 'John', content: 'Pretty good! Did you finish the project?', timestamp: '10:03 AM' },
     { id: 4, sender: 'You', content: 'Yes, I just submitted it. How about yours?', timestamp: '10:05 AM' },
-  ])
-  const [newMessage, setNewMessage] = useState('')
+  ]);
+  const [newMessage, setNewMessage] = useState('');
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== '') {
-      const newMsg: Message = {
+      const newMsg = {
         id: messages.length + 1,
         sender: 'You',
         content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-      setMessages([...messages, newMsg])
-      setNewMessage('')
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages([...messages, newMsg]);
+      setNewMessage('');
     }
-  }
+  };
 
   return (
     <div className="flex h-full mx-auto border rounded-lg overflow-hidden w-full">
@@ -58,7 +42,6 @@ export  function ChatViewWithSidebar() {
           <Input
             placeholder="Search chats..."
             className="w-full"
-            
           />
         </div>
         <ScrollArea className="h-[calc(600px-65px)]">
@@ -133,8 +116,8 @@ export  function ChatViewWithSidebar() {
         <CardFooter className="p-4">
           <form
             onSubmit={(e) => {
-              e.preventDefault()
-              handleSendMessage()
+              e.preventDefault();
+              handleSendMessage();
             }}
             className="flex w-full items-center gap-2"
           >
@@ -160,5 +143,5 @@ export  function ChatViewWithSidebar() {
         </CardFooter>
       </Card>
     </div>
-  )
-}
+  );
+};
