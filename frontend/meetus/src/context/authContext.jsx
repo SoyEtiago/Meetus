@@ -69,6 +69,13 @@ export function AuthProvider({children}) {
     const userDocRef = doc(firestore, "users", userData.user.uid);
     const userChatsDocRef = doc(firestore, "userchats", userData.user.uid);
 
+    const response = await axiosInstance.post('/users/new', {
+      nombre,
+      email,
+      firebaseId
+    });
+
+
     try {
       const userDocSnap = await getDoc(userDocRef);
   
