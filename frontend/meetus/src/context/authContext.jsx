@@ -9,7 +9,7 @@ import {createUserWithEmailAndPassword,
 import {axiosInstance} from "../config/axios/axiosIntance.js"
 
 import {app, auth, firestore} from "../config/firebase/firebaseConfig.js"
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export const authContext = createContext()
 
