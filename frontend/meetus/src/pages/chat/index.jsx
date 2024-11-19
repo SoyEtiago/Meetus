@@ -273,9 +273,9 @@ export const ChatViewWithSidebar = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 className="flex-grow"
               />
-              <Button type="button" size="icon" variant="ghost">
+              {/* <Button type="button" size="icon" variant="ghost">
                 <Smile className="h-5 w-5" />
-              </Button>
+              </Button> */}
               <Button type="submit" size="icon">
                 <Send className="h-5 w-5" />
               </Button>

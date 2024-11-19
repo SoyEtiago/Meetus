@@ -38,14 +38,17 @@ export function EventPage() {
 
   const handleRegistration = async (eventoId) => {
     try {
-      const response = await axiosInstance.get(`/users/${user.uid}`)
-      const userData = response.data
-      const usuarioId = userData.usuario._id
+      const response = await axiosInstance.get(`/users/${user.uid}`);
+      const userData = response.data;
+      const usuarioId = userData.usuario._id;
+  
       await axiosInstance.post('/events/register-attendee', {
         eventoId,
-        usuarioId
-      })
+        usuarioId,
+      });
+  
       setIsDialogOpen(false);
+  
       toast.success("¡Te has registrado exitosamente!", {
         position: "top-right",
         autoClose: 3000,
@@ -57,7 +60,12 @@ export function EventPage() {
         theme: "light",
       });
     } catch (e) {
-      toast.error("Ocurrió un error al registrarte. Intenta nuevamente.", {
+      const errorMessage =
+        e.response && e.response.data && e.response.data.message
+          ? e.response.data.message
+          : "Ocurrió un error al registrarte. Intenta nuevamente.";
+  
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -68,7 +76,14 @@ export function EventPage() {
         theme: "light",
       });
     }
-  }
+  };
+
+  const [selectedEventId, setSelectedEventId] = useState(null);
+
+  const handleOpenDialog = (eventId) => {
+    setSelectedEventId(eventId);
+    setIsDialogOpen(true);
+  };
 
   return (
     <div className="px-4 py-6">
@@ -81,8 +96,10 @@ export function EventPage() {
       </div>
       <div className="w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {events.map((event, key) => (
-            <Card key={key} className="w-full">
+          {events.map((event, key) => {
+            console.log(event._id," : ",key)
+            return (
+            <Card key={event._id} className="w-full">
               <CardContent className="p-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-4 flex-wrap">
@@ -109,7 +126,7 @@ export function EventPage() {
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <div className="w-full flex justify-end">
                         <DialogTrigger asChild>
-                          <Button>
+                          <Button onClick={() => handleOpenDialog(event._id)}>
                             Registrarse
                           </Button>
                         </DialogTrigger>
@@ -118,12 +135,17 @@ export function EventPage() {
                         <DialogHeader>
                           <DialogTitle>Confirmar registro</DialogTitle>
                           <DialogDescription>
-                            Registrate al evento sin precedentes.
+                            Regístrate al evento sin precedentes.
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <form onSubmit={(e)=>{e.preventDefault();handleRegistration(event._id)}}>
-                            <Button type="submit" >Registrarse</Button>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleRegistration(selectedEventId); // Usar el ID seleccionado
+                            }}
+                          >
+                            <Button type="submit">Registrarse</Button>
                           </form>
                         </DialogFooter>
                       </DialogContent>
@@ -131,8 +153,8 @@ export function EventPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)
+          })}
         </div>
       </div>
 
