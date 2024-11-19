@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
   },
   hashedPassword: {
     type: String,
-    required: true,
   },
   eventosRegistrados: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -22,9 +21,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'eventos',
   }],
-  imagenPerfil: {
-    type: String,
-  },
   firebaseId: {
     type: String,
     unique: true

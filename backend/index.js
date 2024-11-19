@@ -3,6 +3,7 @@ const cors = require('cors')
 const eventRouter = require('./routes/eventRoute.js')
 const mongoDbConnect = require('./config/db/mongoConnection')
 require('dotenv').config({path: '../.env'})
+const usuarioRoute = require('./routes/usuarioRoute.js')
 
 const {PORT} = process.env
 
@@ -14,6 +15,7 @@ app.use(cors())
 mongoDbConnect()
 
 app.use('/api', eventRouter);
+app.use('/api', usuarioRoute);
 
 app.get('/', (req, res)=> {
   res.send("API Meetus")

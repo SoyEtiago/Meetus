@@ -14,7 +14,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import {useAuth} from "../../hooks/useAuth";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function Dashboard() {
   const {user} = useAuth();
@@ -23,6 +24,12 @@ function Dashboard() {
       email: user.email,
       avatar: user.photoURL
   }
+  const navigate = useNavigate();
+
+  useEffect(()=> {
+    navigate('/dashboard/events')
+  }, [])
+
   return (
     <SidebarProvider>
       <AppSidebar user={userData}/>

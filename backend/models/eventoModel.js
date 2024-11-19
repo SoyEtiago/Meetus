@@ -8,9 +8,25 @@ const EventSchema = new Schema(
       type: String,
       required: true,
     },
+    organizadorId: {
+      type: String,
+      required: true
+    },
     descripcion: {
       type: String,
       required: true,
+    },
+    fecha: {
+      type: Date,
+      required: true,
+    },
+    hora: {
+      type: String,
+      required: true
+    },
+    lugar: {
+      type: String,
+      required: true
     },
     asistentes: [
       {

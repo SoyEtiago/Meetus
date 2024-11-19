@@ -1,53 +1,40 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { Calendar, Clock, MapPin, Users } from 'lucide-react'
 import  {useNavigate} from "react-router-dom"
+import { axiosInstance } from "../../config/axios/axiosIntance"
+import { useEffect, useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export function EventPage() {
+  const [events, setEvents] = useState([]);
   const navigate = useNavigate()
-  const events = [
-    {
-      id: 1,
-      title: "Eat corn on the cob",
-      location: "Austin, TX",
-      date: "Jan 6",
-      time: "5:00 PM",
-      attendees: 34,
-      attendeeAvatars: [
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-      ],
-    },
-    {
-      id: 2,
-      title: "Tomorrowland",
-      location: "Austin, TX",
-      date: "Jan 6",
-      time: "5:00 PM",
-      attendees: 34,
-      attendeeAvatars: [
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-      ],
-    },
-    {
-      id: 3,
-      title: "We The Medicine",
-      location: "Austin, TX",
-      date: "Jan 6",
-      time: "5:00 PM",
-      attendees: 34,
-      attendeeAvatars: [
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-        "/placeholder.svg?height=32&width=32",
-      ],
-    },
-  ]
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get('/events/all'); 
+        setEvents(response.data.events);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  const handleRegistration = () => {
+    
+  }
 
   return (
     <div className="px-4 py-6">
@@ -58,54 +45,62 @@ export function EventPage() {
         </div>
         <Button onClick={() => navigate('/dashboard/events/new')} >Crea tu propio evento</Button>
       </div>
-      <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex w-full gap-4">
-          {events.map((event) => (
-            <Card key={event.id} className="w-[300px] shrink-0">
+      <div className="w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {events.map((event, key) => (
+            <Card key={key} className="w-full">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        {event.time}
+                        {event.hora}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        {event.location}
+                        {event.lugar}
                       </span>
                     </div>
                   </div>
-                  <h3 className="font-semibold">{event.title}</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {event.attendeeAvatars.map((avatar, i) => (
-                        <Avatar key={i} className="border-2 border-background">
-                          <AvatarImage src={avatar} />
-                          <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      <span>{event.attendees} friends are going</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
+                  <h3 className="font-semibold">{event.nombre}</h3>
+                  <Separator/>
+                  <p>{event.descripcion}</p>
+                  <div className="flex gap-2 flex-wrap">
                     <Button className="w-full" variant="outline">
-                      Maybe
+                      Hablar con organizador
                     </Button>
-                    <Button className="w-full">Going</Button>
+                    <Dialog>
+                      <div className="w-full flex justify-end">
+                        <DialogTrigger asChild>
+                          <Button>
+                            Registrarse
+                          </Button>
+                        </DialogTrigger>
+                      </div>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Confirmar registro</DialogTitle>
+                          <DialogDescription>
+                            Registrate al evento sin precedentes.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button type="submit" onClick={handleRegistration}>Registrarse</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      </div>
+
+
     </div>
   )
 }

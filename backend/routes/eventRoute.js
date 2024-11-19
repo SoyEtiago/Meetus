@@ -5,10 +5,7 @@ const eventoController = require('../controllers/eventController')
 const router = express.Router()
 
 
-router.get('/events/all', (req, res) => {
-  res.send('LISTARÁ TODOS LOS EVENTOS');
-})
-
+router.get('/events/all', eventoController.listarEventos)
 router.post('/events/new', eventoController.crearEvento)
 
 

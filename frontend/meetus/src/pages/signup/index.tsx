@@ -65,9 +65,9 @@ function Signup() {
 
   const onSubmit = (values: z.infer<typeof signupSchema>) => {
     console.log(values);
-    const {email, password} = values;
+    const {email, password, name} = values;
     try {
-      signup(email, password);
+      signup(email, password, name);
       navigate('/dashboard');
     } catch (error: any) {
       if (error.code == "auth/password-does-not-meet-requirements") {
